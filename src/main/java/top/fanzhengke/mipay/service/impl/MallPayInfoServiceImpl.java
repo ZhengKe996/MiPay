@@ -33,11 +33,16 @@ public class MallPayInfoServiceImpl implements MallPayInfoService {
     @Override
     public Integer create(String orderId, BigDecimal amount, Integer payTypeEnum) {
         MallPayInfo payInfo = new MallPayInfo(orderId, payTypeEnum, PayrStatusEnum.NOTPAY.toString(), amount);
-        Integer integer = mallPayInfoMapper.insertSelective(payInfo);
-        if (integer == null) {
+        try {
+            Integer integer = mallPayInfoMapper.insertSelective(payInfo);
+            if (integer == null) {
+                throw new RuntimeException("创建订单失败,请联系管理员");
+            }
+            return integer;
+        } catch (Exception e) {
             throw new RuntimeException("创建订单失败,请联系管理员");
         }
-        return integer;
+
     }
 
     /**
