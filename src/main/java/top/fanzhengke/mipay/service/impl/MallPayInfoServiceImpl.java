@@ -1,5 +1,7 @@
 package top.fanzhengke.mipay.service.impl;
 
+import cn.hutool.json.JSONUtil;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import top.fanzhengke.mipay.domain.MallPayInfo;
 
@@ -18,9 +20,13 @@ import java.math.BigDecimal;
  */
 @Service
 public class MallPayInfoServiceImpl implements MallPayInfoService {
+    private final static String QUEUE_PAY_NOTIFY = "payNotify";
 
     @Autowired
     private MallPayInfoMapper mallPayInfoMapper;
+
+    @Autowired
+    private AmqpTemplate amqpTemplate;
 
     /**
      * 创建订单
@@ -72,6 +78,8 @@ public class MallPayInfoServiceImpl implements MallPayInfoService {
             mallPayInfoMapper.updateByPrimaryKeySelective(payInfo);
         }
         // TODO Pay发送MQ消息, Mall接受MQ消息
+        amqpTemplate.convertAndSend(QUEUE_PAY_NOTIFY, JSONUtil.toJsonStr(payInfo));
+
 
         return "系统默认支付成功";
     }
